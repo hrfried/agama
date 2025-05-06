@@ -195,11 +195,11 @@ impl L10n {
     }
 
     pub fn set_keymap(&mut self, keymap_id: KeymapId) -> Result<(), LocaleError> {
-        if !self.keymaps_db.exists(&keymap_id) {
+        let Some(id) = self.keymaps_db.find(&keymap_id) else {
             return Err(LocaleError::UnknownKeymap(keymap_id));
-        }
+        };
 
-        self.keymap = keymap_id;
+        self.keymap = id;
         Ok(())
     }
 
@@ -214,11 +214,11 @@ impl L10n {
 
     // TODO: use LocaleError
     pub fn set_ui_keymap(&mut self, keymap_id: KeymapId) -> Result<(), LocaleError> {
-        if !self.keymaps_db.exists(&keymap_id) {
+        let Some(id) = self.keymaps_db.find(&keymap_id) else {
             return Err(LocaleError::UnknownKeymap(keymap_id));
-        }
+        };
 
-        self.ui_keymap = keymap_id;
+        self.ui_keymap = id;
 
         Command::new("/usr/bin/localectl")
             .args(["set-keymap", &self.ui_keymap.dashed()])

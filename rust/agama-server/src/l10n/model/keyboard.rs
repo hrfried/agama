@@ -18,7 +18,11 @@
 // To contact SUSE LLC about this file by physical or electronic mail, you may
 // find current contact information at www.suse.com.
 
-use agama_locale_data::{get_localectl_keymaps, keyboard::XkbConfigRegistry, KeymapId};
+use agama_locale_data::{
+    get_localectl_keymaps, get_yast_keyboards,
+    keyboard::{XkbConfigRegistry, YaSTKeyboard},
+    KeymapId,
+};
 use gettextrs::*;
 use serde::ser::{Serialize, SerializeStruct};
 use std::collections::HashMap;
@@ -60,11 +64,12 @@ impl Serialize for Keymap {
 /// Represents the keymaps database.
 ///
 /// The list of supported keymaps is read from `systemd-localed` and the
-/// descriptions from the X Keyboard Configuraiton Database (see
+/// descriptions from the X Keyboard Configuration Database (see
 /// `agama_locale_data::XkbConfigRegistry`).
 #[derive(Default)]
 pub struct KeymapsDatabase {
     keymaps: Vec<Keymap>,
+    yast_keymaps: Vec<YaSTKeyboard>,
 }
 
 impl KeymapsDatabase {
@@ -75,11 +80,25 @@ impl KeymapsDatabase {
     /// Reads the list of keymaps.
     pub fn read(&mut self) -> anyhow::Result<()> {
         self.keymaps = get_keymaps()?;
+        self.yast_keymaps = get_yast_keyboards()?;
         Ok(())
     }
 
-    pub fn exists(&self, id: &KeymapId) -> bool {
-        self.keymaps.iter().any(|k| &k.id == id)
+    /// Finds the keymap in the database.
+    ///
+    /// If it uses an old YaST keymap, it maps it to the new ID.
+    ///
+    /// * `id`: keymap ID to search for.
+    pub fn find(&self, id: &KeymapId) -> Option<KeymapId> {
+        if let Some(keymap) = self.keymaps.iter().find(|k| &k.id == id) {
+            return Some(keymap.id.clone());
+        }
+
+        if let Some(id) = self.yast_keymaps.iter().find(|k| &k.alias == id) {
+            return Some(id.code.clone());
+        }
+
+        return None;
     }
 
     /// Returns the list of keymaps.

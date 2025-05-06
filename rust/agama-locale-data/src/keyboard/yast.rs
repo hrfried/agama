@@ -1,4 +1,4 @@
-// Copyright (c) [2024] SUSE LLC
+// Copyright (c) [2025] SUSE LLC
 //
 // All Rights Reserved.
 //
@@ -18,10 +18,16 @@
 // To contact SUSE LLC about this file by physical or electronic mail, you may
 // find current contact information at www.suse.com.
 
-pub mod xkb_config_registry;
-pub mod xkeyboard;
-mod yast;
+use serde::Deserialize;
+use serde_with::{serde_as, DisplayFromStr};
 
-pub use xkb_config_registry::XkbConfigRegistry;
-pub use xkeyboard::XKeyboards;
-pub use yast::YaSTKeyboard;
+use crate::KeymapId;
+
+#[serde_as]
+#[derive(Deserialize)]
+pub struct YaSTKeyboard {
+    #[serde_as(as = "DisplayFromStr")]
+    pub alias: KeymapId,
+    #[serde_as(as = "DisplayFromStr")]
+    pub code: KeymapId,
+}

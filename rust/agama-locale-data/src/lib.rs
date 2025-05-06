@@ -20,13 +20,16 @@
 
 use anyhow::Context;
 use flate2::bufread::GzDecoder;
+use keyboard::YaSTKeyboard;
 use quick_xml::de::Deserializer;
 use serde::Deserialize;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufRead;
-use std::io::BufReader;
-use std::process::Command;
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufRead, BufReader},
+    path::Path,
+    process::Command,
+};
 
 pub mod deprecated_timezones;
 pub mod keyboard;
@@ -80,6 +83,20 @@ pub fn get_localectl_keymaps() -> anyhow::Result<Vec<KeymapId>> {
     let ret: Vec<_> = output.lines().flat_map(|l| l.parse().ok()).collect();
 
     Ok(ret)
+}
+
+/// Gets the list of YaST keyboards.
+pub fn get_yast_keyboards() -> anyhow::Result<Vec<YaSTKeyboard>> {
+    let relative_path = Path::new("share/yast-keyboards.json");
+    let path = if relative_path.exists() {
+        relative_path
+    } else {
+        Path::new("/usr/share/agama/yast-keyboards.json")
+    };
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let keyboards: Vec<YaSTKeyboard> = serde_json::from_reader(reader)?;
+    Ok(keyboards)
 }
 
 /// Returns struct which contain list of known languages
