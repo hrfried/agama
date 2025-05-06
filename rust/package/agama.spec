@@ -193,6 +193,7 @@ echo $PATH
 %{_bindir}/agama-dbus-server
 %{_bindir}/agama-web-server
 %{_datadir}/dbus-1/agama-services
+%{_datadir}/yast-keyboards.json
 %{_pam_vendordir}/agama
 %{_unitdir}/agama-web-server.service
 
