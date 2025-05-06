@@ -87,6 +87,12 @@ module Agama
             ]
           end
 
+          dbus_method :AddRepository, "in name:s, in url:s" do |name, url|
+            backend.repositories.add(url, name: name)
+            # TODO: refresh only this repository.
+            probe
+          end
+
           # value of result hash is category, description, icon, summary and order
           dbus_method :ListPatterns, "in Filtered:b, out Result:a{s(sssss)}" do |filtered|
             [

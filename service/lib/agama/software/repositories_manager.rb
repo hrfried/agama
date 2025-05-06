@@ -37,8 +37,12 @@ module Agama
       # Adds a new repository
       #
       # @param url [String] Repository URL
-      def add(url)
-        repositories << Repository.create(name: url, url: url)
+      # @param name [String] Repository name
+      def add(url, name: nil)
+        repo_name = name || url
+        return if repositories.any? { |r| r.name == name }
+
+        repositories << Repository.create(name: repo_name, url: url)
       end
 
       # Determines if there are registered repositories
