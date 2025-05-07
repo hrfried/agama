@@ -18,11 +18,13 @@
 // To contact SUSE LLC about this file by physical or electronic mail, you may
 // find current contact information at www.suse.com.
 
+use fluent_uri::Uri;
+
 use crate::base_http_client::{BaseHTTPClient, BaseHTTPClientError};
 use crate::software::model::SoftwareConfig;
 use std::collections::HashMap;
 
-use super::model::{ResolvableParams, ResolvableType};
+use super::model::{Repository, RepositoryParams, ResolvableParams, ResolvableType};
 
 #[derive(Debug, thiserror::Error)]
 pub enum SoftwareHTTPClientError {
@@ -53,6 +55,26 @@ impl SoftwareHTTPClient {
         // CLI prints:
         // Anyhow(Backend call failed with status 400 and text '{"error":"Agama service error: Failed to find these patterns: [\"no_such_pattern\"]"}')
         Ok(self.client.put_void("/software/config", config).await?)
+    }
+
+    /// Adds a repository with the given name and URL.
+    pub async fn add_repository(
+        &self,
+        name: &str,
+        url: &Uri<String>,
+    ) -> Result<(), SoftwareHTTPClientError> {
+        let params = RepositoryParams {
+            name: name.to_string(),
+            url: url.clone(),
+        };
+        self.client
+            .post_void("/software/repositories", &params)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn get_repositories(&self) -> Result<Vec<Repository>, SoftwareHTTPClientError> {
+        Ok(self.client.get("/software/repositories").await?)
     }
 
     /// Returns the ids of patterns selected by user

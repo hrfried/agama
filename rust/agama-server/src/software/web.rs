@@ -39,7 +39,8 @@ use agama_lib::{
     software::{
         model::{
             AddonParams, AddonProperties, License, LicenseContent, LicensesRepo, RegistrationError,
-            RegistrationInfo, RegistrationParams, Repository, ResolvableParams, SoftwareConfig,
+            RegistrationInfo, RegistrationParams, Repository, RepositoryParams, ResolvableParams,
+            SoftwareConfig,
         },
         proxies::{Software1Proxy, SoftwareProductProxy},
         Pattern, SelectedBy, SoftwareClient, UnknownSelectedBy,
@@ -205,7 +206,7 @@ pub async fn software_service(dbus: zbus::Connection) -> Result<Router, ServiceE
     };
     let router = Router::new()
         .route("/patterns", get(patterns))
-        .route("/repositories", get(repositories))
+        .route("/repositories", get(repositories).post(add_repository))
         .route("/products", get(products))
         .route("/licenses", get(licenses))
         .route("/licenses/:id", get(license))
@@ -247,6 +248,26 @@ pub async fn software_service(dbus: zbus::Connection) -> Result<Router, ServiceE
 async fn products(State(state): State<SoftwareState<'_>>) -> Result<Json<Vec<Product>>, Error> {
     let products = state.product.products().await?;
     Ok(Json(products))
+}
+
+/// Registers a repository
+#[utoipa::path(
+    get,
+    path = "/repositories",
+    context_path = "/api/software",
+    responses(
+        (status = 200, description = "The repository was added")
+    )
+)]
+async fn add_repository(
+    State(state): State<SoftwareState<'_>>,
+    Json(repo): Json<RepositoryParams>,
+) -> Result<impl IntoResponse, Error> {
+    state
+        .software
+        .add_repository(&repo.name, repo.url.as_str())
+        .await?;
+    Ok(())
 }
 
 /// Returns the list of defined repositories.

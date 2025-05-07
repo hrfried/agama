@@ -20,6 +20,7 @@
 
 //! Representation of the software settings
 
+use fluent_uri::Uri;
 use serde::{Deserialize, Serialize};
 
 /// Software settings for installation
@@ -32,6 +33,9 @@ pub struct SoftwareSettings {
     /// List of user selected packages to install.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub packages: Option<Vec<String>>,
+    /// Repositories definition
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repositories: Option<Vec<RepositorySettings>>,
 }
 
 impl SoftwareSettings {
@@ -42,4 +46,12 @@ impl SoftwareSettings {
             Some(self)
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct RepositorySettings {
+    /// Repository name.
+    pub name: String,
+    /// Repository URL.
+    pub url: Uri<String>,
 }

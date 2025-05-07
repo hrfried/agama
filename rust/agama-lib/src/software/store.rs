@@ -23,8 +23,8 @@
 use std::collections::HashMap;
 
 use super::{
-    http_client::SoftwareHTTPClientError, model::SoftwareConfig, SoftwareHTTPClient,
-    SoftwareSettings,
+    http_client::SoftwareHTTPClientError, model::SoftwareConfig, settings::RepositorySettings,
+    SoftwareHTTPClient, SoftwareSettings,
 };
 use crate::base_http_client::BaseHTTPClient;
 
@@ -50,6 +50,18 @@ impl SoftwareStore {
         let patterns = self.software_client.user_selected_patterns().await?;
         // FIXME: user_selected_patterns is calling get_config too.
         let config = self.software_client.get_config().await?;
+        let repositories = self
+            .software_client
+            .get_repositories()
+            .await?
+            .into_iter()
+            // TODO: implement From conversions.
+            .map(|r| RepositorySettings {
+                name: r.name,
+                url: r.url.try_into().unwrap(),
+            })
+            .collect::<Vec<_>>();
+
         Ok(SoftwareSettings {
             patterns: if patterns.is_empty() {
                 None
@@ -57,6 +69,11 @@ impl SoftwareStore {
                 Some(patterns)
             },
             packages: config.packages,
+            repositories: if repositories.is_empty() {
+                None
+            } else {
+                Some(repositories)
+            },
         })
     }
 
@@ -65,6 +82,14 @@ impl SoftwareStore {
             .patterns
             .clone()
             .map(|pat| pat.iter().map(|n| (n.to_owned(), true)).collect());
+
+        if let Some(repositories) = &settings.repositories {
+            for repo in repositories {
+                self.software_client
+                    .add_repository(&repo.name, &repo.url)
+                    .await?;
+            }
+        }
 
         let config = SoftwareConfig {
             // do not change the product
@@ -143,6 +168,7 @@ mod test {
         let settings = SoftwareSettings {
             patterns: Some(vec!["xfce".to_owned()]),
             packages: Some(vec!["vim".to_owned()]),
+            repositories: None,
         };
 
         let result = store.store(&settings).await;
@@ -172,6 +198,7 @@ mod test {
         let settings = SoftwareSettings {
             patterns: Some(vec!["no_such_pattern".to_owned()]),
             packages: Some(vec!["vim".to_owned()]),
+            repositories: None,
         };
 
         let result = store.store(&settings).await;

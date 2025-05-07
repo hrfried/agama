@@ -18,6 +18,7 @@
 // To contact SUSE LLC about this file by physical or electronic mail, you may
 // find current contact information at www.suse.com.
 
+use fluent_uri::Uri;
 use serde::{Deserialize, Serialize};
 
 /// Software service configuration (product, patterns, etc.).
@@ -83,4 +84,13 @@ pub struct RegistrationError {
     pub id: u32,
     /// human readable error string intended to be displayed to user
     pub message: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, utoipa::ToSchema)]
+pub struct RepositoryParams {
+    /// Repository name.
+    pub name: String,
+    /// Repository URL.
+    #[schema(value_type = String)]
+    pub url: Uri<String>,
 }

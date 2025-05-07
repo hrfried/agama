@@ -91,6 +91,14 @@ impl<'a> SoftwareClient<'a> {
         })
     }
 
+    /// Adds a repository with the given name an URL.
+    ///
+    /// * `name`: repository name.
+    /// * `url`: repository URL.
+    pub async fn add_repository(&self, name: &str, url: &str) -> Result<(), ServiceError> {
+        Ok(self.software_proxy.add_repository(name, url).await?)
+    }
+
     /// Returns list of defined repositories
     pub async fn repositories(&self) -> Result<Vec<Repository>, ServiceError> {
         let repositories: Vec<Repository> = self

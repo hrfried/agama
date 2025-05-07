@@ -79,6 +79,9 @@ pub trait Software1 {
     /// ListPatterns method
     fn list_patterns(&self, filtered: bool) -> zbus::Result<PatternsMap>;
 
+    /// AddRepository method
+    fn add_repository(&self, name: &str, url: &str) -> zbus::Result<()>;
+
     /// ListRepositories method
     fn list_repositories(&self) -> zbus::Result<Vec<Repository>>;
 
