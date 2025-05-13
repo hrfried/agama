@@ -57,20 +57,18 @@ pub mod localization;
 pub mod logs;
 pub mod manager;
 pub mod network;
+pub mod openapi;
 pub mod product;
 pub mod profile;
-pub mod software;
-pub mod storage;
-pub mod users;
-// TODO: maybe expose only clients when we have it?
-pub mod dbus;
-pub mod openapi;
 pub mod progress;
 pub mod proxies;
 pub mod questions;
 pub mod scripts;
 pub mod security;
+pub mod software;
+pub mod storage;
 mod store;
+pub mod users;
 pub use store::Store;
 pub mod utils;
 
