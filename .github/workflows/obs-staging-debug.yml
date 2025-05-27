@@ -1,0 +1,25 @@
+name: Debug obs2branch
+
+permissions:
+  contents: read
+
+on:
+  push:
+
+  # allow running manually
+  workflow_dispatch:
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Debug
+        run: |
+          echo 'Current GitHub Action variables and values:'
+          echo 'vars.OBS_USER: ${{ vars.OBS_USER }}'
+          echo 'vars.OBS_PROJECTS: ${{ vars.OBS_PROJECTS }}'
+          echo 'github.ref_name: ${{ github.ref_name }}'
+          echo 'Current OBS project: ${{ fromJson(vars.OBS_PROJECTS)[github.ref_name] }}'
+          echo 'Submit condition: ${{ vars.OBS_PROJECTS && fromJson(vars.OBS_PROJECTS)[github.ref_name] && vars.OBS_USER }}'
