@@ -8,6 +8,11 @@
 . /lib/dracut-lib.sh
 . /lib/net-lib.sh
 
+parse_test() {
+  mkdir -p /run/agama/test_brach_obs
+  echo "Testing worked" >/run/agama/test_brach_obs/hello.txt
+}
+
 # Parses the `ifname` option generating a systemd network link file under Agama's run directory
 #
 # Example:
@@ -189,3 +194,4 @@ translate_ifcfg() {
 parse_hostname
 parse_ifname
 translate_ifcfg
+parse_test
