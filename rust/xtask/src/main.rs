@@ -1,4 +1,5 @@
 use std::{env, path::PathBuf};
+mod json_schema;
 
 mod tasks {
     use std::{fs::File, io::Write, path::Path};
@@ -12,8 +13,12 @@ mod tasks {
     use clap::CommandFactory;
     use clap_complete::aot;
     use clap_markdown::MarkdownOptions;
+    use serde_json::Value;
 
-    use crate::create_output_dir;
+    use crate::{
+        create_output_dir,
+        json_schema::{MarkdownWriter, Property, Schema},
+    };
 
     /// Generate auto-completion snippets for common shells.
     pub fn generate_completions() -> std::io::Result<()> {
@@ -91,6 +96,22 @@ mod tasks {
         file.write_all(openapi.as_bytes())?;
         Ok(())
     }
+
+    pub fn generate_json_schema_reference() -> std::io::Result<()> {
+        let schema_path = "agama-lib/share/profile.schema.json";
+        let contents = std::fs::read_to_string(schema_path)?;
+        let schema: Schema = serde_json::from_str(&contents).expect("Read the JSON schema");
+        let content = MarkdownWriter::default().write(&schema);
+        // dbg!(&content);
+
+        println!("{}", content.join("\n"));
+
+        // if let Property::Object(property) = schema {
+        //     let content = MarkdownWriter::default().write(&schema);
+        //     dbg!(&content);
+        // }
+        Ok(())
+    }
 }
 
 fn create_output_dir(name: &str) -> std::io::Result<PathBuf> {
@@ -113,6 +134,7 @@ fn main() -> std::io::Result<()> {
         "markdown" => tasks::generate_markdown(),
         "manpages" => tasks::generate_manpages(),
         "openapi" => tasks::generate_openapi(),
+        "json-schema" => tasks::generate_json_schema_reference(),
         other => {
             eprintln!("Unknown task '{}'", other);
             std::process::exit(1);
